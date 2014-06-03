@@ -101,7 +101,7 @@ func (l *Logger) formatHeader(buf *[]byte, t time.Time, file string, line int) {
 				*buf = append(*buf, '.')
 				itoa(buf, t.Nanosecond()/1e3, 6)
 			}
-			*buf = append(*buf, 'Z] ')
+			*buf = append(*buf, "Z] ")
 		}
 	}
 	if l.flag&(Lshortfile|Llongfile) != 0 {
