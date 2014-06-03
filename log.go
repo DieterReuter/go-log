@@ -32,6 +32,7 @@ const (
 	Lmicroseconds                 // microsecond resolution: 01:23:23.123123.  assumes Ltime.
 	Llongfile                     // full file name and line number: /a/b/c/d.go:23
 	Lshortfile                    // final file name element and line number: d.go:23. overrides Llongfile
+	Lutc                          // use UTC and use format '[date time]''
 	LstdFlags     = Ldate | Ltime // initial values for the standard logger
 )
 
@@ -81,12 +82,16 @@ func (l *Logger) formatHeader(buf *[]byte, t time.Time, file string, line int) {
 	*buf = append(*buf, l.prefix...)
 	if l.flag&(Ldate|Ltime|Lmicroseconds) != 0 {
 		if l.flag&Ldate != 0 {
-			*buf = append(*buf, '[')
+			var delim byte = '/'
+			if l.flag&Lutc != 0 {
+				*buf = append(*buf, '[')
+				delim = '-'
+			}
 			year, month, day := t.Date()
 			itoa(buf, year, 4)
-			*buf = append(*buf, '-')
+			*buf = append(*buf, delim)
 			itoa(buf, int(month), 2)
-			*buf = append(*buf, '-')
+			*buf = append(*buf, delim)
 			itoa(buf, day, 2)
 			*buf = append(*buf, ' ')
 		}
@@ -101,8 +106,10 @@ func (l *Logger) formatHeader(buf *[]byte, t time.Time, file string, line int) {
 				*buf = append(*buf, '.')
 				itoa(buf, t.Nanosecond()/1e3, 6)
 			}
-			*buf = append(*buf, 'Z')
-			*buf = append(*buf, ']')
+			if l.flag&Lutc != 0 {
+				*buf = append(*buf, 'Z')
+				*buf = append(*buf, ']')
+			}
 			*buf = append(*buf, ' ')
 		}
 	}
@@ -131,7 +138,12 @@ func (l *Logger) formatHeader(buf *[]byte, t time.Time, file string, line int) {
 // provided for generality, although at the moment on all pre-defined
 // paths it will be 2.
 func (l *Logger) Output(calldepth int, s string) error {
-	now := time.UTC() // get this early.
+	var now time.Time
+	if l.flag&Lutc != 0 {
+		now = time.Now().UTC() // get this early.
+	} else {
+		now = time.Now() // get this early.
+	}
 	var file string
 	var line int
 	l.mu.Lock()
