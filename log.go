@@ -84,9 +84,9 @@ func (l *Logger) formatHeader(buf *[]byte, t time.Time, file string, line int) {
 			*buf = append(*buf, '[')
 			year, month, day := t.Date()
 			itoa(buf, year, 4)
-			*buf = append(*buf, '/')
+			*buf = append(*buf, '-')
 			itoa(buf, int(month), 2)
-			*buf = append(*buf, '/')
+			*buf = append(*buf, '-')
 			itoa(buf, day, 2)
 			*buf = append(*buf, ' ')
 		}
@@ -101,7 +101,9 @@ func (l *Logger) formatHeader(buf *[]byte, t time.Time, file string, line int) {
 				*buf = append(*buf, '.')
 				itoa(buf, t.Nanosecond()/1e3, 6)
 			}
-			*buf = append(*buf, "Z] ")
+			*buf = append(*buf, 'Z')
+			*buf = append(*buf, ']')
+			*buf = append(*buf, ' ')
 		}
 	}
 	if l.flag&(Lshortfile|Llongfile) != 0 {
