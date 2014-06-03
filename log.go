@@ -81,6 +81,7 @@ func (l *Logger) formatHeader(buf *[]byte, t time.Time, file string, line int) {
 	*buf = append(*buf, l.prefix...)
 	if l.flag&(Ldate|Ltime|Lmicroseconds) != 0 {
 		if l.flag&Ldate != 0 {
+			*buf = append(*buf, '[')
 			year, month, day := t.Date()
 			itoa(buf, year, 4)
 			*buf = append(*buf, '/')
@@ -100,7 +101,7 @@ func (l *Logger) formatHeader(buf *[]byte, t time.Time, file string, line int) {
 				*buf = append(*buf, '.')
 				itoa(buf, t.Nanosecond()/1e3, 6)
 			}
-			*buf = append(*buf, ' ')
+			*buf = append(*buf, 'Z] ')
 		}
 	}
 	if l.flag&(Lshortfile|Llongfile) != 0 {
@@ -128,7 +129,7 @@ func (l *Logger) formatHeader(buf *[]byte, t time.Time, file string, line int) {
 // provided for generality, although at the moment on all pre-defined
 // paths it will be 2.
 func (l *Logger) Output(calldepth int, s string) error {
-	now := time.Now() // get this early.
+	now := time.UTC() // get this early.
 	var file string
 	var line int
 	l.mu.Lock()
